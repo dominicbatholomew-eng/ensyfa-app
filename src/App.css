@@ -1,0 +1,159 @@
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #0b1220;
+  --panel: #121a2b;
+  --text: #f8fafc;
+  --muted: #cbd5e1;
+  --line: rgba(255, 255, 255, 0.12);
+  --accent: #22c55e;
+  --accent-dark: #16a34a;
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(34, 197, 94, 0.12), transparent 30%),
+    radial-gradient(circle at top right, rgba(59, 130, 246, 0.12), transparent 28%),
+    linear-gradient(135deg, #09111d, #0f172a 40%, #111827 100%);
+  color: var(--text);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+h1 {
+  margin: 0 0 10px;
+  font-size: 2.5rem;
+  line-height: 1.1;
+  font-weight: 800;
+}
+
+h2 {
+  margin: 0 0 18px;
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+h3 {
+  margin: 0 0 12px;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+p {
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+input,
+select,
+button {
+  font: inherit;
+}
+
+input,
+select {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  outline: none;
+}
+
+input::placeholder {
+  color: #94a3b8;
+}
+
+input:focus,
+select:focus {
+  border-color: rgba(34, 197, 94, 0.7);
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
+}
+
+button {
+  padding: 11px 16px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(34, 197, 94, 0.25);
+}
+
+button:hover {
+  opacity: 0.95;
+}
+
+hr {
+  border: none;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(255,255,255,0.25), transparent);
+  margin: 32px 0;
+}
+
+form {
+  padding: 22px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+
+strong {
+  color: #ffffff;
+}
+
+@media (max-width: 768px) {
+  h1 {
+    font-size: 2rem;
+  }
+
+  h2 {
+    font-size: 1.4rem;
+  }
+
+  button {
+    width: 100%;
+    margin-top: 8px;
+  }
+}
+select {
+  color: white;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+select option {
+  color: black;
+  background: white;
+}
+@media print {
+  button,
+  form,
+  input,
+  select,
+  hr {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  h1, h2, h3, p, strong, div {
+    color: black !important;
+    box-shadow: none !important;
+    background: white !important;
+  }
+}
