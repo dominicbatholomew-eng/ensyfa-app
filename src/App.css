@@ -340,3 +340,9 @@ div[style*="alignContent: 'start'"] {
     border-color: #dddddd !important;
   }
 }
+@media (max-width: 640px) {
+  img[alt="ENSYFA Logo"] {
+    width: 60px !important;
+    height: 60px !important;
+  }
+}

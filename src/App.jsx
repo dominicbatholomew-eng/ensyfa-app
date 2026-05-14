@@ -767,8 +767,15 @@ function App() {
   if (!session) {
     return (
       <div style={{ padding: '30px', fontFamily: 'Arial', maxWidth: '400px' }}>
-        <h1>ENSYFA Admin Login</h1>
-        <p>Please sign in to access the management dashboard.</p>
+        <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+  <img
+    src="/ensyfa-logo.png"
+    alt="ENSYFA Logo"
+    style={{ width: '90px', height: '90px', objectFit: 'contain', marginBottom: '12px' }}
+  />
+  <h1>ENSYFA Admin Login</h1>
+  <p>Please sign in to access the management dashboard.</p>
+</div>
 
         <form onSubmit={handleLogin} style={{ display: 'grid', gap: '10px' }}>
           <input
@@ -807,14 +814,17 @@ function App() {
           marginBottom: '20px',
         }}
       >
-        <div>
-          <h1>ENSYFA Digital Platform</h1>
-          <p>Welcome to ENSYFA management system.</p>
-        </div>
-        <button onClick={handleLogout}>Logout</button>
-      </div>
-
-      <div
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
+  <img
+    src="/ensyfa-logo.png"
+    alt="ENSYFA Logo"
+    style={{ width: '70px', height: '70px', objectFit: 'contain', borderRadius: '12px' }}
+  />
+  <div>
+    <h1>ENSYFA Digital Platform</h1>
+    <p>Welcome to ENSYFA management system.</p>
+  </div>
+</div>
         style={{
           display: 'flex',
           gap: '10px',
