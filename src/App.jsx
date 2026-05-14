@@ -114,10 +114,7 @@ function App() {
       setLoginMessage('Login error: ' + error.message)
     } else {
       setLoginMessage('Login successful!')
-      setLoginData({
-        email: '',
-        password: '',
-      })
+      setLoginData({ email: '', password: '' })
     }
   }
 
@@ -590,158 +587,6 @@ function App() {
     }
   }
 
-  const getMemberName = (memberId) => {
-    const member = members.find((m) => m.id === memberId)
-    return member ? member.full_name : 'Unknown Member'
-  }
-
-  const getMemberContributionTotal = (memberId) => {
-    return contributions
-      .filter((item) => item.member_id === memberId)
-      .reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
-  }
-
-  const getMemberLoanCount = (memberId) => {
-    return loanRequests.filter((loan) => loan.member_id === memberId).length
-  }
-
-  const getMemberPendingLoanCount = (memberId) => {
-    return loanRequests.filter(
-      (loan) => loan.member_id === memberId && loan.status === 'Pending'
-    ).length
-  }
-
-  const getMemberApprovedLoanCount = (memberId) => {
-    return loanRequests.filter(
-      (loan) => loan.member_id === memberId && loan.status === 'Approved'
-    ).length
-  }
-
-  const filteredMembers = members.filter((member) => {
-    const search = memberSearch.toLowerCase()
-    return (
-      (member.full_name || '').toLowerCase().includes(search) ||
-      (member.phone || '').toLowerCase().includes(search) ||
-      (member.occupation || '').toLowerCase().includes(search)
-    )
-  })
-
-  const totalContributionAmount = contributions.reduce(
-    (sum, item) => sum + (Number(item.amount) || 0),
-    0
-  )
-
-  const totalApprovedLoans = loanRequests.filter(
-    (loan) => loan.status === 'Approved'
-  ).length
-
-  const totalPendingLoans = loanRequests.filter(
-    (loan) => loan.status === 'Pending'
-  ).length
-
-  const totalRejectedLoans = loanRequests.filter(
-    (loan) => loan.status === 'Rejected'
-  ).length
-
-  const filteredContributions = contributions.filter((item) => {
-    const memberName = getMemberName(item.member_id).toLowerCase()
-    const matchesSearch = memberName.includes(contributionSearch.toLowerCase())
-    const matchesType =
-      contributionTypeFilter === '' || item.payment_type === contributionTypeFilter
-
-    return matchesSearch && matchesType
-  })
-
-  const filteredLoans = loanRequests.filter((loan) => {
-    const memberName = getMemberName(loan.member_id).toLowerCase()
-    const matchesSearch = memberName.includes(loanSearch.toLowerCase())
-    const matchesStatus =
-      loanStatusFilter === '' || loan.status === loanStatusFilter
-
-    return matchesSearch && matchesStatus
-  })
-
-  const handlePrintSection = () => {
-    window.print()
-  }
-
-  const downloadCSV = (filename, rows) => {
-    if (!rows || rows.length === 0) {
-      alert('No data to export.')
-      return
-    }
-
-    const headers = Object.keys(rows[0])
-
-    const csvContent = [
-      headers.join(','),
-      ...rows.map((row) =>
-        headers
-          .map((header) => {
-            const value = row[header] ?? ''
-            const escaped = String(value).replace(/"/g, '""')
-            return `"${escaped}"`
-          })
-          .join(',')
-      ),
-    ].join('\n')
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.setAttribute('download', filename)
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    URL.revokeObjectURL(url)
-  }
-
-  const handleExportMembers = () => {
-    const rows = members.map((member) => ({
-      full_name: member.full_name,
-      phone: member.phone,
-      email: member.email,
-      address: member.address,
-      gender: member.gender,
-      occupation: member.occupation,
-      share_capital: member.share_capital,
-      monthly_contribution: member.monthly_contribution,
-      total_contributions_paid: getMemberContributionTotal(member.id),
-      total_loan_requests: getMemberLoanCount(member.id),
-      pending_loans: getMemberPendingLoanCount(member.id),
-      approved_loans: getMemberApprovedLoanCount(member.id),
-    }))
-
-    downloadCSV('ensyfa_members.csv', rows)
-  }
-
-  const handleExportContributions = () => {
-    const rows = filteredContributions.map((item) => ({
-      member_name: getMemberName(item.member_id),
-      amount: item.amount,
-      payment_date: item.payment_date,
-      payment_type: item.payment_type,
-      note: item.note,
-    }))
-
-    downloadCSV('ensyfa_contributions.csv', rows)
-  }
-
-  const handleExportLoans = () => {
-    const rows = filteredLoans.map((loan) => ({
-      member_name: getMemberName(loan.member_id),
-      amount_requested: loan.amount_requested,
-      reason: loan.reason,
-      status: loan.status,
-      request_date: loan.request_date,
-      approval_date: loan.approval_date,
-      note: loan.note,
-    }))
-
-    downloadCSV('ensyfa_loans.csv', rows)
-  }
-
   const pageLayoutStyle = {
     display: 'grid',
     gridTemplateColumns: 'minmax(320px, 420px) minmax(0, 1fr)',
@@ -768,14 +613,14 @@ function App() {
     return (
       <div style={{ padding: '30px', fontFamily: 'Arial', maxWidth: '400px' }}>
         <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-  <img
-    src="/ensyfa-logo.png"
-    alt="ENSYFA Logo"
-    style={{ width: '90px', height: '90px', objectFit: 'contain', marginBottom: '12px' }}
-  />
-  <h1>ENSYFA Admin Login</h1>
-  <p>Please sign in to access the management dashboard.</p>
-</div>
+          <img
+            src="/ensyfa-logo.png"
+            alt="ENSYFA Logo"
+            style={{ width: '90px', height: '90px', objectFit: 'contain', marginBottom: '12px' }}
+          />
+          <h1>ENSYFA Admin Login</h1>
+          <p>Please sign in to access the management dashboard.</p>
+        </div>
 
         <form onSubmit={handleLogin} style={{ display: 'grid', gap: '10px' }}>
           <input
@@ -815,16 +660,21 @@ function App() {
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
-  <img
-    src="/ensyfa-logo.png"
-    alt="ENSYFA Logo"
-    style={{ width: '70px', height: '70px', objectFit: 'contain', borderRadius: '12px' }}
-  />
-  <div>
-    <h1>ENSYFA Digital Platform</h1>
-    <p>Welcome to ENSYFA management system.</p>
-  </div>
-</div>
+          <img
+            src="/ensyfa-logo.png"
+            alt="ENSYFA Logo"
+            style={{ width: '70px', height: '70px', objectFit: 'contain', borderRadius: '12px' }}
+          />
+          <div>
+            <h1>ENSYFA Digital Platform</h1>
+            <p>Welcome to ENSYFA management system.</p>
+          </div>
+        </div>
+
+        <button onClick={handleLogout}>Logout</button>
+      </div>
+
+      <div
         style={{
           display: 'flex',
           gap: '10px',
