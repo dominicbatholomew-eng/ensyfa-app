@@ -587,6 +587,158 @@ function App() {
     }
   }
 
+  const getMemberName = (memberId) => {
+    const member = members.find((m) => m.id === memberId)
+    return member ? member.full_name : 'Unknown Member'
+  }
+
+  const getMemberContributionTotal = (memberId) => {
+    return contributions
+      .filter((item) => item.member_id === memberId)
+      .reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
+  }
+
+  const getMemberLoanCount = (memberId) => {
+    return loanRequests.filter((loan) => loan.member_id === memberId).length
+  }
+
+  const getMemberPendingLoanCount = (memberId) => {
+    return loanRequests.filter(
+      (loan) => loan.member_id === memberId && loan.status === 'Pending'
+    ).length
+  }
+
+  const getMemberApprovedLoanCount = (memberId) => {
+    return loanRequests.filter(
+      (loan) => loan.member_id === memberId && loan.status === 'Approved'
+    ).length
+  }
+
+  const filteredMembers = members.filter((member) => {
+    const search = memberSearch.toLowerCase()
+    return (
+      (member.full_name || '').toLowerCase().includes(search) ||
+      (member.phone || '').toLowerCase().includes(search) ||
+      (member.occupation || '').toLowerCase().includes(search)
+    )
+  })
+
+  const totalContributionAmount = contributions.reduce(
+    (sum, item) => sum + (Number(item.amount) || 0),
+    0
+  )
+
+  const totalApprovedLoans = loanRequests.filter(
+    (loan) => loan.status === 'Approved'
+  ).length
+
+  const totalPendingLoans = loanRequests.filter(
+    (loan) => loan.status === 'Pending'
+  ).length
+
+  const totalRejectedLoans = loanRequests.filter(
+    (loan) => loan.status === 'Rejected'
+  ).length
+
+  const filteredContributions = contributions.filter((item) => {
+    const memberName = getMemberName(item.member_id).toLowerCase()
+    const matchesSearch = memberName.includes(contributionSearch.toLowerCase())
+    const matchesType =
+      contributionTypeFilter === '' || item.payment_type === contributionTypeFilter
+
+    return matchesSearch && matchesType
+  })
+
+  const filteredLoans = loanRequests.filter((loan) => {
+    const memberName = getMemberName(loan.member_id).toLowerCase()
+    const matchesSearch = memberName.includes(loanSearch.toLowerCase())
+    const matchesStatus =
+      loanStatusFilter === '' || loan.status === loanStatusFilter
+
+    return matchesSearch && matchesStatus
+  })
+
+  const handlePrintSection = () => {
+    window.print()
+  }
+
+  const downloadCSV = (filename, rows) => {
+    if (!rows || rows.length === 0) {
+      alert('No data to export.')
+      return
+    }
+
+    const headers = Object.keys(rows[0])
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map((row) =>
+        headers
+          .map((header) => {
+            const value = row[header] ?? ''
+            const escaped = String(value).replace(/"/g, '""')
+            return `"${escaped}"`
+          })
+          .join(',')
+      ),
+    ].join('\n')
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', filename)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }
+
+  const handleExportMembers = () => {
+    const rows = members.map((member) => ({
+      full_name: member.full_name,
+      phone: member.phone,
+      email: member.email,
+      address: member.address,
+      gender: member.gender,
+      occupation: member.occupation,
+      share_capital: member.share_capital,
+      monthly_contribution: member.monthly_contribution,
+      total_contributions_paid: getMemberContributionTotal(member.id),
+      total_loan_requests: getMemberLoanCount(member.id),
+      pending_loans: getMemberPendingLoanCount(member.id),
+      approved_loans: getMemberApprovedLoanCount(member.id),
+    }))
+
+    downloadCSV('ensyfa_members.csv', rows)
+  }
+
+  const handleExportContributions = () => {
+    const rows = filteredContributions.map((item) => ({
+      member_name: getMemberName(item.member_id),
+      amount: item.amount,
+      payment_date: item.payment_date,
+      payment_type: item.payment_type,
+      note: item.note,
+    }))
+
+    downloadCSV('ensyfa_contributions.csv', rows)
+  }
+
+  const handleExportLoans = () => {
+    const rows = filteredLoans.map((loan) => ({
+      member_name: getMemberName(loan.member_id),
+      amount_requested: loan.amount_requested,
+      reason: loan.reason,
+      status: loan.status,
+      request_date: loan.request_date,
+      approval_date: loan.approval_date,
+      note: loan.note,
+    }))
+
+    downloadCSV('ensyfa_loans.csv', rows)
+  }
+
   const pageLayoutStyle = {
     display: 'grid',
     gridTemplateColumns: 'minmax(320px, 420px) minmax(0, 1fr)',
@@ -631,7 +783,6 @@ function App() {
             onChange={handleLoginChange}
             required
           />
-
           <input
             type="password"
             name="password"
@@ -640,7 +791,6 @@ function App() {
             onChange={handleLoginChange}
             required
           />
-
           <button type="submit">Login</button>
         </form>
 
@@ -703,37 +853,30 @@ function App() {
               <h3>Total Members</h3>
               <p>{members.length}</p>
             </div>
-
             <div style={{ border: '1px solid #ccc', padding: '20px', borderRadius: '10px' }}>
               <h3>Total Contributions</h3>
               <p>{contributions.length}</p>
             </div>
-
             <div style={{ border: '1px solid #ccc', padding: '20px', borderRadius: '10px' }}>
               <h3>Total Contribution Amount</h3>
               <p>₦{totalContributionAmount.toLocaleString()}</p>
             </div>
-
             <div style={{ border: '1px solid #ccc', padding: '20px', borderRadius: '10px' }}>
               <h3>Total Loan Requests</h3>
               <p>{loanRequests.length}</p>
             </div>
-
             <div style={{ border: '1px solid #ccc', padding: '20px', borderRadius: '10px' }}>
               <h3>Approved Loans</h3>
               <p>{totalApprovedLoans}</p>
             </div>
-
             <div style={{ border: '1px solid #ccc', padding: '20px', borderRadius: '10px' }}>
               <h3>Pending Loans</h3>
               <p>{totalPendingLoans}</p>
             </div>
-
             <div style={{ border: '1px solid #ccc', padding: '20px', borderRadius: '10px' }}>
               <h3>Rejected Loans</h3>
               <p>{totalRejectedLoans}</p>
             </div>
-
             <div style={{ border: '1px solid #ccc', padding: '20px', borderRadius: '10px' }}>
               <h3>Total Announcements</h3>
               <p>{announcements.length}</p>
@@ -756,13 +899,7 @@ function App() {
                 <input type="text" name="gender" placeholder="Gender" value={formData.gender} onChange={handleChange} />
                 <input type="text" name="occupation" placeholder="Occupation" value={formData.occupation} onChange={handleChange} />
                 <input type="number" name="share_capital" placeholder="Share Capital" value={formData.share_capital} onChange={handleChange} />
-                <input
-                  type="number"
-                  name="monthly_contribution"
-                  placeholder="Monthly Contribution"
-                  value={formData.monthly_contribution}
-                  onChange={handleChange}
-                />
+                <input type="number" name="monthly_contribution" placeholder="Monthly Contribution" value={formData.monthly_contribution} onChange={handleChange} />
 
                 <button type="submit">{editingId ? 'Update Member' : 'Save Member'}</button>
 
@@ -839,16 +976,8 @@ function App() {
 
           <div style={pageLayoutStyle}>
             <div>
-              <form
-                onSubmit={handleContributionSubmit}
-                style={{ display: 'grid', gap: '10px', maxWidth: '100%' }}
-              >
-                <select
-                  name="member_id"
-                  value={contributionData.member_id}
-                  onChange={handleContributionChange}
-                  required
-                >
+              <form onSubmit={handleContributionSubmit} style={{ display: 'grid', gap: '10px', maxWidth: '100%' }}>
+                <select name="member_id" value={contributionData.member_id} onChange={handleContributionChange} required>
                   <option value="">Select Member</option>
                   {members.map((member) => (
                     <option key={member.id} value={member.id}>
@@ -857,41 +986,16 @@ function App() {
                   ))}
                 </select>
 
-                <input
-                  type="number"
-                  name="amount"
-                  placeholder="Amount Paid"
-                  value={contributionData.amount}
-                  onChange={handleContributionChange}
-                  required
-                />
+                <input type="number" name="amount" placeholder="Amount Paid" value={contributionData.amount} onChange={handleContributionChange} required />
+                <input type="date" name="payment_date" value={contributionData.payment_date} onChange={handleContributionChange} required />
 
-                <input
-                  type="date"
-                  name="payment_date"
-                  value={contributionData.payment_date}
-                  onChange={handleContributionChange}
-                  required
-                />
-
-                <select
-                  name="payment_type"
-                  value={contributionData.payment_type}
-                  onChange={handleContributionChange}
-                  required
-                >
+                <select name="payment_type" value={contributionData.payment_type} onChange={handleContributionChange} required>
                   <option value="">Select Contribution Type</option>
                   <option value="Ordinary Savings">Ordinary Savings</option>
                   <option value="Special Savings">Special Savings</option>
                 </select>
 
-                <input
-                  type="text"
-                  name="note"
-                  placeholder="Note"
-                  value={contributionData.note}
-                  onChange={handleContributionChange}
-                />
+                <input type="text" name="note" placeholder="Note" value={contributionData.note} onChange={handleContributionChange} />
 
                 <button type="submit">
                   {editingContributionId ? 'Update Contribution' : 'Save Contribution'}
@@ -917,9 +1021,7 @@ function App() {
                 )}
               </form>
 
-              {contributionMessage && (
-                <p style={{ marginTop: '15px' }}>{contributionMessage}</p>
-              )}
+              {contributionMessage && <p style={{ marginTop: '15px' }}>{contributionMessage}</p>}
             </div>
 
             <div style={historyPanelStyle}>
@@ -939,10 +1041,7 @@ function App() {
                   onChange={(e) => setContributionSearch(e.target.value)}
                 />
 
-                <select
-                  value={contributionTypeFilter}
-                  onChange={(e) => setContributionTypeFilter(e.target.value)}
-                >
+                <select value={contributionTypeFilter} onChange={(e) => setContributionTypeFilter(e.target.value)}>
                   <option value="">All Contribution Types</option>
                   <option value="Ordinary Savings">Ordinary Savings</option>
                   <option value="Special Savings">Special Savings</option>
@@ -988,16 +1087,8 @@ function App() {
 
           <div style={pageLayoutStyle}>
             <div>
-              <form
-                onSubmit={handleLoanSubmit}
-                style={{ display: 'grid', gap: '10px', maxWidth: '100%' }}
-              >
-                <select
-                  name="member_id"
-                  value={loanData.member_id}
-                  onChange={handleLoanChange}
-                  required
-                >
+              <form onSubmit={handleLoanSubmit} style={{ display: 'grid', gap: '10px', maxWidth: '100%' }}>
+                <select name="member_id" value={loanData.member_id} onChange={handleLoanChange} required>
                   <option value="">Select Member</option>
                   {members.map((member) => (
                     <option key={member.id} value={member.id}>
@@ -1006,57 +1097,18 @@ function App() {
                   ))}
                 </select>
 
-                <input
-                  type="number"
-                  name="amount_requested"
-                  placeholder="Amount Requested"
-                  value={loanData.amount_requested}
-                  onChange={handleLoanChange}
-                  required
-                />
+                <input type="number" name="amount_requested" placeholder="Amount Requested" value={loanData.amount_requested} onChange={handleLoanChange} required />
+                <input type="text" name="reason" placeholder="Reason for Loan" value={loanData.reason} onChange={handleLoanChange} required />
 
-                <input
-                  type="text"
-                  name="reason"
-                  placeholder="Reason for Loan"
-                  value={loanData.reason}
-                  onChange={handleLoanChange}
-                  required
-                />
-
-                <select
-                  name="status"
-                  value={loanData.status}
-                  onChange={handleLoanChange}
-                  required
-                >
+                <select name="status" value={loanData.status} onChange={handleLoanChange} required>
                   <option value="Pending">Pending</option>
                   <option value="Approved">Approved</option>
                   <option value="Rejected">Rejected</option>
                 </select>
 
-                <input
-                  type="date"
-                  name="request_date"
-                  value={loanData.request_date}
-                  onChange={handleLoanChange}
-                  required
-                />
-
-                <input
-                  type="date"
-                  name="approval_date"
-                  value={loanData.approval_date}
-                  onChange={handleLoanChange}
-                />
-
-                <input
-                  type="text"
-                  name="note"
-                  placeholder="Note"
-                  value={loanData.note}
-                  onChange={handleLoanChange}
-                />
+                <input type="date" name="request_date" value={loanData.request_date} onChange={handleLoanChange} required />
+                <input type="date" name="approval_date" value={loanData.approval_date} onChange={handleLoanChange} />
+                <input type="text" name="note" placeholder="Note" value={loanData.note} onChange={handleLoanChange} />
 
                 <button type="submit">
                   {editingLoanId ? 'Update Loan Request' : 'Save Loan Request'}
@@ -1104,10 +1156,7 @@ function App() {
                   onChange={(e) => setLoanSearch(e.target.value)}
                 />
 
-                <select
-                  value={loanStatusFilter}
-                  onChange={(e) => setLoanStatusFilter(e.target.value)}
-                >
+                <select value={loanStatusFilter} onChange={(e) => setLoanStatusFilter(e.target.value)}>
                   <option value="">All Loan Status</option>
                   <option value="Pending">Pending</option>
                   <option value="Approved">Approved</option>
@@ -1156,56 +1205,19 @@ function App() {
 
           <div style={pageLayoutStyle}>
             <div>
-              <form
-                onSubmit={handleAnnouncementSubmit}
-                style={{ display: 'grid', gap: '10px', maxWidth: '100%' }}
-              >
-                <input
-                  type="text"
-                  name="title"
-                  placeholder="Announcement Title"
-                  value={announcementData.title}
-                  onChange={handleAnnouncementChange}
-                  required
-                />
+              <form onSubmit={handleAnnouncementSubmit} style={{ display: 'grid', gap: '10px', maxWidth: '100%' }}>
+                <input type="text" name="title" placeholder="Announcement Title" value={announcementData.title} onChange={handleAnnouncementChange} required />
+                <input type="text" name="message" placeholder="Announcement Message" value={announcementData.message} onChange={handleAnnouncementChange} required />
 
-                <input
-                  type="text"
-                  name="message"
-                  placeholder="Announcement Message"
-                  value={announcementData.message}
-                  onChange={handleAnnouncementChange}
-                  required
-                />
-
-                <select
-                  name="audience"
-                  value={announcementData.audience}
-                  onChange={handleAnnouncementChange}
-                  required
-                >
+                <select name="audience" value={announcementData.audience} onChange={handleAnnouncementChange} required>
                   <option value="">Select Audience</option>
                   <option value="All Members">All Members</option>
                   <option value="Executives">Executives</option>
                   <option value="Loan Applicants">Loan Applicants</option>
                 </select>
 
-                <input
-                  type="text"
-                  name="posted_by"
-                  placeholder="Posted By"
-                  value={announcementData.posted_by}
-                  onChange={handleAnnouncementChange}
-                  required
-                />
-
-                <input
-                  type="date"
-                  name="posted_date"
-                  value={announcementData.posted_date}
-                  onChange={handleAnnouncementChange}
-                  required
-                />
+                <input type="text" name="posted_by" placeholder="Posted By" value={announcementData.posted_by} onChange={handleAnnouncementChange} required />
+                <input type="date" name="posted_date" value={announcementData.posted_date} onChange={handleAnnouncementChange} required />
 
                 <button type="submit">
                   {editingAnnouncementId ? 'Update Announcement' : 'Save Announcement'}
@@ -1231,9 +1243,7 @@ function App() {
                 )}
               </form>
 
-              {announcementMessage && (
-                <p style={{ marginTop: '15px' }}>{announcementMessage}</p>
-              )}
+              {announcementMessage && <p style={{ marginTop: '15px' }}>{announcementMessage}</p>}
             </div>
 
             <div style={historyPanelStyle}>
